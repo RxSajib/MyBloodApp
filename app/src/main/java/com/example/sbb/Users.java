@@ -3,6 +3,7 @@ package com.example.sbb;
 
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.drawable.Animatable;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -13,6 +14,8 @@ import androidx.recyclerview.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.SearchView;
 import android.widget.TextView;
 
@@ -38,6 +41,7 @@ public class Users extends Fragment {
     private RecyclerView recyclerView;
     private DatabaseReference MuserDatabase;
     private SearchView searchView;
+    private Animation animation;
 
     public Users() {
         // Required empty public constructor
@@ -128,6 +132,9 @@ public class Users extends Fragment {
                                     startActivity(intent);
                                 }
                             });
+
+                            animation = AnimationUtils.loadAnimation(userHolder.context, R.anim.from_button);
+                            userHolder.Mview.setAnimation(animation);
                         }
                         else {
 

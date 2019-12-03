@@ -183,15 +183,6 @@ public class HomeActivity extends AppCompatActivity {
                     startActivity(intent);
                 }
 
-                if(menuItem.getItemId() == R.id.PlanID){
-                    android.app.AlertDialog.Builder Mbuilder = new android.app.AlertDialog.Builder(getApplicationContext());
-                    View view = LayoutInflater.from(getApplicationContext()).inflate(R.layout.planand_developing_layout, null, false);
-
-                    Mbuilder.setView(view);
-
-                    AlertDialog alertDialog = Mbuilder.create();
-                    alertDialog.show();
-                }
                 if(menuItem.getItemId() == R.id.ProfileID){
                     menuItem.setCheckable(true);
                     menuItem.setCheckable(true);

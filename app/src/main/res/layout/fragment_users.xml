@@ -16,7 +16,7 @@
         <SearchView
             android:id="@+id/BloodSearchID"
             android:layout_width="match_parent"
-            android:queryHint="Search By Group"
+            android:queryHint="Search By Blood Group"
             android:layout_height="wrap_content">
         </SearchView>
 

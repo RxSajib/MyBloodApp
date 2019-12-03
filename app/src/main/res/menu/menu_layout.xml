@@ -50,11 +50,7 @@
             android:icon="@drawable/sharing"
             ></item>
 
-        <item
-            android:id="@+id/PlanID"
-            android:title="Plan &amp; Developing"
-            android:icon="@drawable/pcode"
-            ></item>
+
 
         <item
             android:id="@+id/NextPlayingID"
