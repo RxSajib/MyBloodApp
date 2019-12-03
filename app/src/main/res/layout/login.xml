@@ -8,6 +8,16 @@
     android:background="@drawable/iback"
     tools:context=".Login_Activity">
 
+    <ImageView
+        android:id="@+id/GuestLoginID"
+        android:src="@drawable/cross_sign"
+        android:layout_width="30dp"
+        android:layout_alignParentRight="true"
+        android:layout_marginRight="10dp"
+        android:layout_marginTop="30dp"
+        android:layout_height="30dp">
+
+    </ImageView>
 
     <RelativeLayout
         android:id="@+id/layoutFiveID"

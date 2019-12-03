@@ -14,7 +14,8 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".MyRquestActivity"></activity>
+        <activity android:name=".GuestHomePage"></activity>
+        <activity android:name=".MyRquestActivity" />
         <activity android:name=".FrieendsListActivity" />
         <activity android:name=".ForgotPasswordActivity" />
         <activity android:name=".NextPlaningActivity" />

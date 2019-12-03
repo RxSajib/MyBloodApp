@@ -123,6 +123,8 @@ public class Card extends Fragment {
                                 cardHolder.setprofileiamegst(profile_imageLinkget);
                             }
 
+                            animation = AnimationUtils.loadAnimation(cardHolder.context, R.anim.from_button);
+                            cardHolder.Mview.setAnimation(animation);
 
                         }
                         else {

@@ -12,6 +12,7 @@ import android.view.View;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.TimePicker;
@@ -35,6 +36,7 @@ public class Login_Activity extends AppCompatActivity {
     private ProgressDialog Mprogress;
     private Button phonelogin;
     private TextView forgotpassword;
+    private ImageView guestlogin;
 
     private Handler handler = new Handler();
     Runnable runnable = new Runnable() {
@@ -77,16 +79,26 @@ public class Login_Activity extends AppCompatActivity {
         });
 
         if(Build.VERSION.SDK_INT <= Build.VERSION_CODES.M){
-            getWindow().addFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
+            getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
         }
         else {
-            getWindow().addFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
+            getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
         }
 
         layoutone = findViewById(R.id.layoutoneID);
         layouttwo = findViewById(R.id.layoutThreeID);
         layoutthree = findViewById(R.id.layoutTwoID);
         layoutfive = findViewById(R.id.layoutFiveID);
+        guestlogin = findViewById(R.id.GuestLoginID);
+
+        guestlogin.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(getApplicationContext(), GuestHomePage.class);
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                startActivity(intent);
+            }
+        });
 
 
         handler.postDelayed(runnable, 4000);
