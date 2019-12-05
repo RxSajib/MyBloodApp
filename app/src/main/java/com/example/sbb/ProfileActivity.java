@@ -119,6 +119,7 @@ public class ProfileActivity extends AppCompatActivity {
                 Ominus.setBackgroundResource(R.drawable.blood_buttondesign);
                 ABplus.setBackgroundResource(R.drawable.blood_buttondesign);
                 ABminus.setBackgroundResource(R.drawable.blood_buttondesign);
+
             }
         });
 

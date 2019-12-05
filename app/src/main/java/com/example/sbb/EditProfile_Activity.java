@@ -122,7 +122,7 @@ public class EditProfile_Activity extends AppCompatActivity {
         aminus.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                CurrentBloodClikc="A+";
+                CurrentBloodClikc="A-";
                 aplus.setBackgroundResource(R.drawable.blood_buttondesign);
                 aminus.setBackgroundResource(R.drawable.blood_buttonclick);
                 bplus.setBackgroundResource(R.drawable.blood_buttondesign);
@@ -394,7 +394,7 @@ public class EditProfile_Activity extends AppCompatActivity {
             username.getEditText().setError("Username require");
         }
 
-        else if(CurrentBloodClikc == ""){
+        else if(CurrentBloodClikc.equals("")){
             Toast.makeText(getApplicationContext(), "Please select your blood group", Toast.LENGTH_LONG).show();
         }
 
@@ -411,7 +411,7 @@ public class EditProfile_Activity extends AppCompatActivity {
             height.getEditText().setError("Height require");
         }
 
-        else if(GenderString == ""){
+        else if(GenderString.equals("")){
             Toast.makeText(getApplicationContext(), "Select your gender", Toast.LENGTH_LONG).show();
         }
         else {
@@ -425,7 +425,7 @@ public class EditProfile_Activity extends AppCompatActivity {
             updatemap.put("address", addresstext);
             updatemap.put("hight", heighttext);
             updatemap.put("gender", GenderString);
-            updatemap.put("blood", bloodtext);
+            updatemap.put("blood", CurrentBloodClikc);
             updatemap.put("age", agetext);
 
             Muserdatabase.child(CurrentUserID).updateChildren(updatemap)
