@@ -12,6 +12,8 @@ import android.os.Bundle;
 import android.provider.Contacts;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -41,6 +43,7 @@ public class RequestActivity extends AppCompatActivity {
     private FirebaseAuth Mauth;
     private String CurrentUserID;
     private DatabaseReference MlikeDatabase;
+    private Animation animation;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -128,6 +131,9 @@ public class RequestActivity extends AppCompatActivity {
                                 String hospitalnameget = dataSnapshot.child("hospitalname").getValue().toString();
                                 mPostHolder.sethospitalset(hospitalnameget);
                             }
+
+                            animation = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.from_button);
+                            mPostHolder.Mview.setAnimation(animation);
 
                             mPostHolder.likeicon.setOnClickListener(new View.OnClickListener() {
                                 @Override
