@@ -45,6 +45,7 @@
         android:layout_below="@id/profileID"
         android:layout_marginStart="10dp"
         android:layout_marginTop="3dp"
+        android:textSize="20dp"
         android:layout_toRightOf="@id/name"
         android:text="Group"
         android:textColor="@android:color/holo_red_light">

@@ -2,19 +2,22 @@ package com.example.sbb;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.cardview.widget.CardView;
-import androidx.fragment.app.FragmentPagerAdapter;
-import androidx.recyclerview.widget.RecyclerView;
 
-import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
-import android.widget.RelativeLayout;
+import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.sbb.Common.Common;
+import com.example.sbb.Model.Myresponce;
+import com.example.sbb.Model.Notification;
+import com.example.sbb.Model.Sender;
+import com.example.sbb.Model.Token;
+import com.example.sbb.Remote.APIservice;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
@@ -29,8 +32,11 @@ import com.squareup.picasso.Picasso;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.HashMap;
 
 import de.hdodenhof.circleimageview.CircleImageView;
+import retrofit2.Call;
+import retrofit2.Response;
 
 public class BloodRequest extends AppCompatActivity {
 
@@ -47,10 +53,11 @@ public class BloodRequest extends AppCompatActivity {
     private TextView Age;
     private TextView friendsname;
     private TextView requestbuttontext;
-
+    private String CurrentStates;
+    private String Currentdate;
 
     /// blood card
-    private CardView requestbutton, unfriendbutton;
+    private Button requestbutton, unfriendbutton;
     /// blood card
 
     //////friends user details
@@ -62,12 +69,15 @@ public class BloodRequest extends AppCompatActivity {
     private String FriendsPhoneNumber;
     private String FriendsPhotoUrl;
     //////friends user details
+    private String Currentitme;
 
     private CircleImageView senderimage;
     private CircleImageView reciverimage;
     private String CURRENT_STATES;
-    private DatabaseReference MFriendRef;
-    private DatabaseReference AccepectFriendDatabase;
+    private DatabaseReference MFriendRequestDatabase;
+    private DatabaseReference Friends;
+    APIservice mService;
+    private DatabaseReference MnotufactionDataase;
 
 
     @Override
@@ -75,14 +85,18 @@ public class BloodRequest extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_blood_request);
 
+        mService= Common.getFCMClient();
+        MnotufactionDataase = FirebaseDatabase.getInstance().getReference().child("Notifactions");
 
-        AccepectFriendDatabase = FirebaseDatabase.getInstance().getReference().child("Friend");
-        MFriendRef = FirebaseDatabase.getInstance().getReference().child("FriendRequest");
+
+        CurrentStates = "not_friends";
+
+        Friends = FirebaseDatabase.getInstance().getReference().child("Friend");
+        MFriendRequestDatabase = FirebaseDatabase.getInstance().getReference().child("FriendRequest");
         requestbutton = findViewById(R.id.RequestButtonID);
-        unfriendbutton = findViewById(R.id.UnFriendButtonID);
+        unfriendbutton = findViewById(R.id.RemoveButtonID);
 
-        requestbuttontext = findViewById(R.id.RequestTextID);
-        CURRENT_STATES = "not_friend";
+        requestbuttontext = findViewById(R.id.RequestButtonID);
         friendsname = findViewById(R.id.FriendsNameID);
         blood = findViewById(R.id.BloodGroup);
         phonenumber = findViewById(R.id.PhoenNumberID);
@@ -198,152 +212,121 @@ public class BloodRequest extends AppCompatActivity {
 
         unfriendbutton.setEnabled(false);
 
-        if (!SenderID.equals(ReciverID)) {
+        if (ReciverID.equals(SenderID)) {
 
+            unfriendbutton.setEnabled(false);
+            requestbutton.setEnabled(false);
+            unfriendbutton.setVisibility(View.INVISIBLE);
+            requestbutton.setVisibility(View.INVISIBLE);
+
+        } else {
 
             requestbutton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     requestbutton.setEnabled(false);
 
-                    if (CURRENT_STATES.equals("not_friend")) {
-                        sendfriend_request();
+
+                    if (CurrentStates.equals("not_friends")) {
+                        SendFriend_Request();
                     }
-                    if (CURRENT_STATES.equals("request_send")) {
-                        cancel_request();
+
+                    if (CurrentStates.equals("request_send")) {
+                        Cancel_Request();
                     }
-                    if (CURRENT_STATES.equals("request_recived")) {
+
+                    if (CurrentStates.equals("Request_Recived")) {
                         AccepectRequest();
                     }
-                    if (CURRENT_STATES.equals("friend")) {
-                        unfriendthispersion();
+
+                    if (CurrentStates.equals("friends")) {
+
+                        UnfriendExistingFriend();
                     }
+
                 }
             });
-
-        } else {
-            requestbutton.setVisibility(View.GONE);
-            unfriendbutton.setVisibility(View.GONE);
         }
 
-        maintaincesButton();
+        matainted_button();
 
     }
 
-    private void sendfriend_request() {
-        MFriendRef.child(SenderID).child(ReciverID).child("request_type").setValue("send")
-                .addOnCompleteListener(new OnCompleteListener<Void>() {
-                    @Override
-                    public void onComplete(@NonNull Task<Void> task) {
 
-                        if (task.isSuccessful()) {
-                            MFriendRef.child(ReciverID).child(SenderID).child("request_type").setValue("recived")
-                                    .addOnCompleteListener(new OnCompleteListener<Void>() {
-                                        @Override
-                                        public void onComplete(@NonNull Task<Void> task) {
-
-                                            if (task.isSuccessful()) {
-                                                requestbutton.setEnabled(true);
-                                                CURRENT_STATES = "request_send";
-                                                requestbuttontext.setText("Cancel Request");
-                                                requestbuttontext.setTextColor(Color.RED);
-
-                                                unfriendbutton.setEnabled(false);
-                                            }
-                                        }
-                                    });
+    ///unfriend
+    private void UnfriendExistingFriend() {
+        Friends.child(SenderID).child(ReciverID)
+                .removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+                if (task.isSuccessful()) {
+                    Friends.child(ReciverID).child(SenderID)
+                            .removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
+                        @Override
+                        public void onComplete(@NonNull Task<Void> task) {
+                            if (task.isSuccessful()) {
+                                CurrentStates = "not_friends";
+                                requestbutton.setEnabled(true);
+                                requestbutton.setText("Request");
+                                requestbutton.setBackgroundResource(R.drawable.request_buttondesign);
+                                unfriendbutton.setEnabled(false);
+                            }
                         }
-                    }
-
-                });
+                    });
+                }
+            }
+        });
     }
+    ///unfriend
 
-    private void unfriendthispersion() {
 
-        AccepectFriendDatabase.child(SenderID).child(ReciverID)
-                .removeValue()
-                .addOnCompleteListener(new OnCompleteListener<Void>() {
-                    @Override
-                    public void onComplete(@NonNull Task<Void> task) {
-                        if (task.isSuccessful()) {
-                            AccepectFriendDatabase.child(ReciverID).child(SenderID)
-                                    .removeValue()
-                                    .addOnCompleteListener(new OnCompleteListener<Void>() {
-                                        @Override
-                                        public void onComplete(@NonNull Task<Void> task) {
-                                            if (task.isSuccessful()) {
-                                                requestbutton.setEnabled(true);
-                                                requestbuttontext.setText("Send Request");
-                                                requestbuttontext.setTextColor(Color.WHITE);
-                                                CURRENT_STATES = "not_friend";
-
-                                                unfriendbutton.setEnabled(false);
-                                            }
-                                        }
-                                    });
-                        }
-                    }
-                });
-
-    }
-
+    ///Accepect Request
     private void AccepectRequest() {
+        Calendar calendartime = Calendar.getInstance();
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("hh:mm a");
+        Currentitme = simpleDateFormat.format(calendartime.getTime());
 
         Calendar calendardate = Calendar.getInstance();
-        SimpleDateFormat simpleDateFormatdate = new SimpleDateFormat("dd-MMMM-yyyy");
-        final String date = simpleDateFormatdate.format(calendardate.getTime());
+        SimpleDateFormat simpleDateFormat1 = new SimpleDateFormat("dd-MMMM-yyyy");
+        Currentdate = simpleDateFormat1.format(calendardate.getTime());
 
-        AccepectFriendDatabase.child(SenderID).child(ReciverID).child("date").setValue(date)
+        Friends.child(SenderID).child(ReciverID).child("date").setValue(Currentdate)
                 .addOnCompleteListener(new OnCompleteListener<Void>() {
                     @Override
                     public void onComplete(@NonNull Task<Void> task) {
+
                         if (task.isSuccessful()) {
-                            AccepectFriendDatabase.child(ReciverID).child(SenderID).child("date").setValue(date)
+
+                            Friends.child(ReciverID).child(SenderID).child("date").setValue(Currentdate)
                                     .addOnCompleteListener(new OnCompleteListener<Void>() {
                                         @Override
                                         public void onComplete(@NonNull Task<Void> task) {
+
                                             if (task.isSuccessful()) {
-                                                MFriendRef.child(SenderID).child(ReciverID)
-                                                        .removeValue()
-                                                        .addOnCompleteListener(new OnCompleteListener<Void>() {
-                                                            @Override
-                                                            public void onComplete(@NonNull Task<Void> task) {
-                                                                if (task.isSuccessful()) {
-                                                                    requestbutton.setEnabled(true);
-                                                                    CURRENT_STATES = "friend";
-                                                                    requestbuttontext.setTextColor(Color.RED);
-                                                                    requestbuttontext.setText("Remove this pension");
+                                                MFriendRequestDatabase.child(SenderID).child(ReciverID)
+                                                        .removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
+                                                    @Override
+                                                    public void onComplete(@NonNull Task<Void> task) {
+                                                        if (task.isSuccessful()) {
+                                                            MFriendRequestDatabase.child(ReciverID).child(SenderID)
+                                                                    .removeValue()
+                                                                    .addOnCompleteListener(new OnCompleteListener<Void>() {
+                                                                        @Override
+                                                                        public void onComplete(@NonNull Task<Void> task) {
+                                                                            if (task.isSuccessful()) {
+                                                                                CurrentStates = "friends";
+                                                                                requestbutton.setEnabled(true);
+                                                                                requestbutton.setText("Remove");
+                                                                                requestbutton.setBackgroundResource(R.drawable.cancelrequest_design);
+                                                                                unfriendbutton.setEnabled(false);
+                                                                            }
+                                                                        }
+                                                                    });
+                                                        }
 
-                                                                    unfriendbutton.setEnabled(false);
-                                                                }
-                                                            }
-                                                        });
-                                            }
-                                        }
-                                    });
-                        }
-                    }
-                });
 
-    }
-
-    private void cancel_request() {
-        MFriendRef.child(SenderID).child(ReciverID).removeValue()
-                .addOnCompleteListener(new OnCompleteListener<Void>() {
-                    @Override
-                    public void onComplete(@NonNull Task<Void> task) {
-                        if (task.isSuccessful()) {
-                            MFriendRef.child(ReciverID).child(SenderID)
-                                    .removeValue()
-                                    .addOnCompleteListener(new OnCompleteListener<Void>() {
-                                        @Override
-                                        public void onComplete(@NonNull Task<Void> task) {
-                                            if (task.isSuccessful()) {
-                                                CURRENT_STATES = "not_friend";
-                                                requestbutton.setEnabled(true);
-                                                requestbuttontext.setText("Request Me");
-                                                requestbuttontext.setTextColor(Color.WHITE);
-                                                unfriendbutton.setEnabled(false);
+                                                    }
+                                                });
                                             }
                                         }
                                     });
@@ -351,44 +334,127 @@ public class BloodRequest extends AppCompatActivity {
                     }
                 });
     }
+    ///Accepect Request
 
-    private void maintaincesButton() {
 
-        MFriendRef.child(SenderID).addListenerForSingleValueEvent(new ValueEventListener() {
+    ///send Friend Request
+    private void SendFriend_Request() {
+
+        MFriendRequestDatabase.child(SenderID).child(ReciverID).
+                child("request_type").setValue("send").addOnCompleteListener(new OnCompleteListener<Void>() {
             @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                if (dataSnapshot.hasChild(SenderID)) {
-                    String type = dataSnapshot.child(ReciverID).child("request_type").getValue().toString();
+            public void onComplete(@NonNull Task<Void> task) {
+                if (task.isSuccessful()) {
+                    MFriendRequestDatabase.child(ReciverID).child(SenderID)
+                            .child("request_type").setValue("recived")
+                            .addOnCompleteListener(new OnCompleteListener<Void>() {
+                                @Override
+                                public void onComplete(@NonNull Task<Void> task) {
+                                    if (task.isSuccessful()) {
 
-                    if (type.equals("send")) {
-                        CURRENT_STATES = "request_send";
 
-                        requestbuttontext.setText("Cancel Request");
-                        requestbuttontext.setTextColor(Color.RED);
+                                        HashMap<String, String> notifactionmap = new HashMap<>();
+                                        notifactionmap.put("from", SenderID);
+                                        notifactionmap.put("type", "request");
+                                        MnotufactionDataase.child(ReciverID).setValue(notifactionmap)
+                                                .addOnCompleteListener(new OnCompleteListener<Void>() {
+                                                    @Override
+                                                    public void onComplete(@NonNull Task<Void> task) {
+                                                        if(task.isSuccessful()){
 
-                        unfriendbutton.setEnabled(false);
-                    } else if (type.equals("recived")) {
-                        CURRENT_STATES = "request_recived";
-                        requestbuttontext.setText("Accept Request");
-                        requestbuttontext.setTextColor(Color.WHITE);
+                                                        }
+                                                        else {
 
-                        unfriendbutton.setEnabled(true);
+                                                        }
+                                                    }
+                                                });
 
-                        unfriendbutton.setOnClickListener(new View.OnClickListener() {
-                            @Override
-                            public void onClick(View v) {
-                                cancel_request();
+                                        requestbutton.setEnabled(true);
+                                        CurrentStates = "request_send";
+                                        requestbutton.setText("Delate");
+
+                                        requestbutton.setBackgroundResource(R.drawable.cancelrequest_design);
+
+                                        unfriendbutton.setEnabled(false);
+
+                                        sendNotification();
+
+                                    }
+                                }
+                            });
+                }
+            }
+        });
+    }
+
+
+    /// Cancel Request
+    private void Cancel_Request() {
+        MFriendRequestDatabase.child(SenderID).child(ReciverID)
+                .removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+                if (task.isSuccessful()) {
+                    MFriendRequestDatabase.child(ReciverID).child(SenderID)
+                            .removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
+                        @Override
+                        public void onComplete(@NonNull Task<Void> task) {
+                            CurrentStates = "not_friends";
+                            requestbutton.setEnabled(true);
+                            requestbutton.setText("Request");
+                            requestbutton.setBackgroundResource(R.drawable.request_buttondesign);
+
+                            unfriendbutton.setEnabled(false);
+                        }
+                    });
+                }
+            }
+        });
+    }
+    /// Cancel Request
+
+    private void matainted_button() {
+
+        MFriendRequestDatabase.child(SenderID)
+                .addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+
+                        if (dataSnapshot.hasChild(ReciverID)) {
+                            String request_type = dataSnapshot.child(ReciverID).child("request_type").getValue().toString();
+                            if (request_type.equals("send")) {
+                                CurrentStates = "request_send";
+                                requestbutton.setText("Delate");
+
+
+                                unfriendbutton.setEnabled(false);
+                            } else if (request_type.equals("recived")) {
+
+                                CurrentStates = "Request_Recived";
+                                requestbutton.setText("Accept");
+                                requestbutton.setBackgroundResource(R.drawable.request_buttondesign);
+
+                                unfriendbutton.setEnabled(true);
+
+                                unfriendbutton.setOnClickListener(new View.OnClickListener() {
+                                    @Override
+                                    public void onClick(View view) {
+                                        Cancel_Request();
+                                    }
+                                });
+
+
                             }
-                        });
-                    }
-                } else {
-                    MFriendRef.child(SenderID)
-                            .addListenerForSingleValueEvent(new ValueEventListener() {
+
+
+                        } else {
+                            Friends.child(SenderID).addListenerForSingleValueEvent(new ValueEventListener() {
                                 @Override
                                 public void onDataChange(DataSnapshot dataSnapshot) {
                                     if (dataSnapshot.hasChild(ReciverID)) {
-                                        CURRENT_STATES = "friend";
-                                        requestbuttontext.setText("Remove Request");
+                                        CurrentStates = "friends";
+                                        requestbutton.setText("Remove");
+                                        requestbutton.setBackgroundResource(R.drawable.cancelrequest_design);
 
                                         unfriendbutton.setEnabled(false);
                                     }
@@ -399,7 +465,84 @@ public class BloodRequest extends AppCompatActivity {
 
                                 }
                             });
-                }
+                        }
+
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+
+                    }
+                });
+    }
+
+
+
+    private void sendNotification() {
+
+
+
+        FirebaseDatabase.getInstance().getReference("Token").child(ReciverID).addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+
+
+                //Log.i("SnapShort "+dataSnapshot.)
+
+
+                //Map<String,String> test= (Map<String, String>) dataSnapshot.getValue();
+
+
+
+
+                String TOKEN = dataSnapshot.child("token").getValue().toString();
+
+
+
+                Token token=dataSnapshot.getValue(Token.class);
+
+
+                String message="New Blood Request Found!";
+                String title="Blood Request";
+
+
+              /*  HashMap<String,String> data=new HashMap<>();
+                data.put("title",title);
+                data.put("body",message);*/
+
+
+
+
+                Notification notification=new Notification(message,title);
+                Sender noti=new Sender(token.getToken(),notification);
+
+
+
+
+
+                mService.sendNotification(noti).enqueue(new retrofit2.Callback<Myresponce>() {
+                    @Override
+                    public void onResponse(Call<Myresponce> call, Response<Myresponce> response) {
+
+                        Log.i("STATUS", "onResponse: SUCCESS "  +  response.message());
+
+                    }
+
+                    @Override
+                    public void onFailure(Call<Myresponce> call, Throwable t) {
+
+                        Log.i("STATUS", "onResponse: FAILED ");
+
+
+                    }
+                });
+
+
+
+
+
+
+
             }
 
             @Override
@@ -407,6 +550,9 @@ public class BloodRequest extends AppCompatActivity {
 
             }
         });
+
+
+
 
     }
 }

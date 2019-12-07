@@ -40,7 +40,7 @@ public class TabHolder extends FragmentPagerAdapter {
 
         switch (position){
             case 0:
-                return "Card";
+                return "Donor";
 
             case 1:
                 return "Contact";

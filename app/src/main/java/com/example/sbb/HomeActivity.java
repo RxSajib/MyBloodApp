@@ -2,27 +2,21 @@ package com.example.sbb;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.view.menu.MenuView;
 import androidx.appcompat.widget.Toolbar;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.viewpager.widget.ViewPager;
 
-import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.os.Build;
 import android.os.Bundle;
 import android.view.Gravity;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.Button;
-import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
+import com.example.sbb.Model.Token;
 import com.google.android.material.navigation.NavigationView;
 import com.google.android.material.tabs.TabLayout;
 import com.google.firebase.auth.FirebaseAuth;
@@ -32,6 +26,7 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.iid.FirebaseInstanceId;
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.NetworkPolicy;
 import com.squareup.picasso.Picasso;
@@ -61,6 +56,8 @@ public class HomeActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
+
+        fcm_token();
 
         malllist = FirebaseDatabase.getInstance().getReference().child("Users");
         malllist.addValueEventListener(new ValueEventListener() {
@@ -124,8 +121,8 @@ public class HomeActivity extends AppCompatActivity {
                             }
                         });
                     }
-                    if(dataSnapshot.hasChild("address")){
-                        address = dataSnapshot.child("address").getValue().toString();
+                    if(dataSnapshot.hasChild("idno")){
+                        address = dataSnapshot.child("idno").getValue().toString();
                         navaddress.setText(address);
                     }
                 }
@@ -225,12 +222,24 @@ public class HomeActivity extends AppCompatActivity {
                     String sharesubject = "Hey"+"\n\n"+sharebody+"\n";
                     intent.putExtra(Intent.EXTRA_TEXT, sharesubject);
                     //  intent.putExtra(Intent.EXTRA_SUBJECT, sharebody);
-                    startActivity(Intent.createChooser(intent, "share with"));
+                    startActivity(Intent.createChooser(intent, "share out Application"));
                 }
 
                 if(menuItem.getItemId() == R.id.BloodListID){
+                    drawerLayout.closeDrawer(Gravity.START);
+                    menuItem.setCheckable(true);
+                    menuItem.setCheckable(true);
                     Intent intent  = new Intent(getApplicationContext(), MyRquestActivity.class);
                     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                    startActivity(intent);
+                }
+
+                if(menuItem.getItemId() == R.id.MyRequestID){
+                    drawerLayout.closeDrawer(Gravity.START);
+                    menuItem.setCheckable(true);
+                    menuItem.setCheckable(true);
+                    Intent intent = new Intent(getApplicationContext(), Request_Activity.class);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                     startActivity(intent);
                 }
 
@@ -277,6 +286,27 @@ public class HomeActivity extends AppCompatActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    private void fcm_token() {
+
+
+
+        String refreshedToken = FirebaseInstanceId.getInstance().getToken();
+
+
+        //  if (refreshedToken!="")
+
+
+
+
+
+        FirebaseDatabase db=FirebaseDatabase.getInstance();
+        DatabaseReference referance=db.getReference("Token");
+        Token token=new Token(refreshedToken,true);
+        referance.child(FirebaseAuth.getInstance().getCurrentUser().getUid()).setValue(token);
+
+
     }
 
     @Override

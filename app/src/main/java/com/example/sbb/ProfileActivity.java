@@ -26,6 +26,7 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.iid.FirebaseInstanceId;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
@@ -67,6 +68,8 @@ public class ProfileActivity extends AppCompatActivity {
         malebutton = findViewById(R.id.MaleButtonID);
         femailbutton = findViewById(R.id.FemailButtonIDID);
         othersbutton = findViewById(R.id.OthersBuID);
+
+
 
         malebutton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -311,6 +314,7 @@ public class ProfileActivity extends AppCompatActivity {
                     usermap.put("gender", CurrentGender);
                     usermap.put("blood", CurrentGroup);
                     usermap.put("profile_imageLink", profileimagelink);
+                    usermap.put("devices_token", FirebaseInstanceId.getInstance().getToken().toString());
                     usermap.put("age", agetext);
 
 
